@@ -2,34 +2,15 @@
 
 namespace Asdfx\UrbanDictionary;
 
-use Tightenco\Collect\Support\Collection;
-use Zttp\Zttp;
-
-class UrbanDictionary {
-    /**
-     * @var string|null
-     */
-    protected $apiKey = null;
-
-    /**
-     * UrbanDictionary constructor.
-     * @param string|null $apiKey
-     * @throws \Exception
-     */
-    public function __construct(?string $apiKey = null)
-    {
-        if ($apiKey === null) {
-            throw new \Exception('Please provide an API key');
-        }
-        $this->apiKey = $apiKey;
-    }
-
+class UrbanDictionary
+{
     /**
      * Given a string, return an array of definitions for that string
      *
      * @param string|null $query
      * @return array
      * @throws \Exception
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function lookup(string $query = null): array
     {
@@ -37,15 +18,44 @@ class UrbanDictionary {
             throw new \Exception('No query was provided');
         }
 
-        $response = Zttp::get(sprintf('https://api.urbandictionary.com/v0/define?term=%s', $query));
+        $client = new \GuzzleHttp\Client();
+        $request = $client->request('GET', sprintf('https://api.urbandictionary.com/v0/define?term=%s', $query));
 
-        if ($response->isOk() === false) {
+        if ($request->getStatusCode() !== 200) {
             throw new \Exception('API Request failed');
         }
 
-        return (new Collection($response->json()['list']))->map(function ($definition) {
-            return trim(preg_replace('/\s+/', ' ', $definition['definition']));
-        })->toArray();
+        return $this->toArray($request->getBody()->getContents());
+    }
+
+    /**
+     * Take the JSON response from UrbanDictionary API and return it as an array of definitions.
+     *
+     * @param string $json
+     * @return array
+     */
+    private function toArray(string $json): array
+    {
+        $data = json_decode($json);
+        $definitions = [];
+        foreach ($data->list as $definition) {
+            $definitions[] = $this->sanitiseDefinition($definition->definition);
+        }
+        return $definitions;
+    }
+
+    /**
+     * Sanitise the definition by removing newlines, and square brackets [ and ]
+     *
+     * @param $string
+     * @return string
+     */
+    private function sanitiseDefinition($string): string
+    {
+        $string = trim(preg_replace('/\s\s+/', ' ', $string));
+        $string = str_replace('[', '', $string);
+        $string = str_replace(']', '', $string);
+        return $string;
     }
 }
 
