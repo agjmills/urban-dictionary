@@ -13,6 +13,6 @@ class UrbanDictionaryTest extends TestCase {
     {
         $urbanDictionary = new \Asdfx\UrbanDictionary\UrbanDictionary('ca3a830972msh867fa6eeeb7bf66p1dc977jsndfe95b69fedc');
         $result = $urbanDictionary->lookup('wat');
-        die(var_dump(result));
+        die(var_dump($result));
     }
 }
