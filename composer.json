@@ -1,0 +1,22 @@
+{
+    "name": "asdfx/urban-dictionary",
+    "description": "A package to retrieve entries from Urban Dictionary",
+    "require": {
+        "kitetail/zttp": "^0.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^8.0"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Alex Mills",
+            "email": "alex@asdfx.us"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Asdfx\\UrbanDictionary\\": "src"
+        }
+    }
+}
